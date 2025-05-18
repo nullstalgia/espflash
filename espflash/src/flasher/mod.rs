@@ -995,14 +995,12 @@ impl Flasher {
         addr: u32,
         data: &[u8],
         progress: Option<&mut dyn ProgressCallbacks>,
-        verify: bool,
-        skip: bool,
     ) -> Result<(), Error> {
         let segment = RomSegment {
             addr,
             data: Cow::from(data),
         };
-        self.write_bins_to_flash(&[segment], progress, verify, skip)?;
+        self.write_bins_to_flash(&[segment], progress)?;
 
         info!("Binary successfully written to flash!");
 
@@ -1014,12 +1012,10 @@ impl Flasher {
         &mut self,
         segments: &[RomSegment],
         mut progress: Option<&mut dyn ProgressCallbacks>,
-        verify: bool,
-        skip: bool,
     ) -> Result<(), Error> {
-        let mut target = self
-            .chip
-            .flash_target(self.spi_params, self.use_stub, verify, skip);
+        let mut target =
+            self.chip
+                .flash_target(self.spi_params, self.use_stub, self.verify, self.skip);
         target.begin(&mut self.connection).flashing()?;
         for segment in segments {
             target.write_segment(&mut self.connection, segment.borrow(), &mut progress)?;
